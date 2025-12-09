@@ -102,10 +102,10 @@ export  const cities = ['Mumbai', 'Delhi', 'Bangalore', 'Chennai', 'Kolkata', 'H
 
 
 export const socials = [
-  { name: "twitter", icon: Twitter, url: "https://twitter.com/medicare-plus" },
-  { name: "facebook", icon: Facebook, url: "https://facebook.com/medicare-plus" },
-  { name: "linkedin", icon: Linkedin, url: "https://linkedin.com/company/medicare-plus" },
-  { name: "instagram", icon: Instagram, url: "https://instagram.com/medicare-plus"},
+  { name: "twitter", icon: Twitter, url: "https://twitter.com" },
+  { name: "facebook", icon: Facebook, url: "https://facebook.com" },
+  { name: "linkedin", icon: Linkedin, url: "https://www.linkedin.com/in/abbas-ansari" },
+  { name: "instagram", icon: Instagram, url: "https://instagram.com"},
 ]
 
 
