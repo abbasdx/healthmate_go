@@ -1,6 +1,6 @@
 // src/components/auth/AuthForm.tsx
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -17,7 +17,7 @@ interface AuthFormProps {
   userRole: 'doctor' | 'patient';
 }
 
-  const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export const AuthForm = ({ type, userRole }: AuthFormProps) => {
   const [formData, setFormData] = useState({
@@ -39,8 +39,23 @@ export const AuthForm = ({ type, userRole }: AuthFormProps) => {
 
   const router = useRouter();
 
+  const getFriendlyError = (message?: string) => {
+    const normalized = (message || '').toLowerCase();
 
-  
+    if (normalized.includes('inactive account')) {
+      return 'Your account is inactive right now. Please verify your account or contact support if you think this is a mistake.';
+    }
+
+    if (normalized.includes('invalid credentials') || normalized.includes('wrong password')) {
+      return 'The email or password is incorrect. Please try again.';
+    }
+
+    if (normalized.includes('network') || normalized.includes('fetch')) {
+      return 'We could not reach the server. Please check your connection and try again.';
+    }
+
+    return message || 'Something went wrong. Please try again.';
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,18 +87,19 @@ export const AuthForm = ({ type, userRole }: AuthFormProps) => {
         }
       }
     } catch (err) {
-        console.log(err)
       console.error(`${type} failed:`, err);
     }
   };
 
   const handleGoogleAuth = () => {
+    if (!BASE_URL) return;
     window.location.href = `${BASE_URL}/auth/google?type=${userRole}`;
   };
 
   const isSignup = type === 'signup';
   const title = isSignup ? 'Create a secure account' : 'Welcome back';
   const buttonText = isSignup ? 'Create account' : 'Sign in';
+  const loadingText = isSignup ? 'Creating account...' : 'Signing in...';
   const altLinkText = isSignup ? 'Already a member?' : "Don't have an account?";
   const altLinkAction = isSignup ? 'Sign in' : 'Sign up';
   const altLinkPath = isSignup ? `/login/${userRole}` : `/signup/${userRole}`;
@@ -97,10 +113,10 @@ export const AuthForm = ({ type, userRole }: AuthFormProps) => {
       <Card className="border-0 shadow-xl">
         <CardContent className="p-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">{title}</h2>
-          
+
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm">
-              {error}
+              {getFriendlyError(error)}
             </div>
           )}
 
@@ -182,7 +198,7 @@ export const AuthForm = ({ type, userRole }: AuthFormProps) => {
               className="w-full bg-blue-600 hover:bg-blue-700 rounded-full py-3"
               disabled={loading || (isSignup && !agreeToTerms)}
             >
-              {loading ? `${type === 'signup' ? 'Creating' : 'Signing'} in...` : buttonText}
+              {loading ? loadingText : buttonText}
             </Button>
           </form>
 
@@ -200,6 +216,7 @@ export const AuthForm = ({ type, userRole }: AuthFormProps) => {
                 variant="outline"
                 className="w-full rounded-full border-gray-300"
                 onClick={handleGoogleAuth}
+                disabled={loading || !BASE_URL}
               >
                 <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>

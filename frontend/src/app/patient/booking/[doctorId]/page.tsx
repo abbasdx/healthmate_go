@@ -2,7 +2,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Check } from "lucide-react";
+import { ArrowLeft, Check, RefreshCw, AlertCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useDoctorStore } from "@/stores/doctorStore";
@@ -21,8 +21,8 @@ const BookingPage = () => {
   const router = useRouter();
   const doctorId = params.doctorId as string;
 
-  const { currentDoctor, fetchDoctorById } = useDoctorStore();
-  const { bookAppointment, loading, fetchBookedSlots, bookedSlots } =
+  const { currentDoctor, fetchDoctorById, loading, error } = useDoctorStore();
+  const { bookAppointment, loading: bookingLoading, fetchBookedSlots, bookedSlots } =
     useAppointmentStore();
 
   // State
@@ -186,36 +186,60 @@ const BookingPage = () => {
     return Math.max(0, basePrice + typePrice);
   };
 
-  if (!currentDoctor) {
+  if (loading && !currentDoctor) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="text-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4">
+        <div className="text-center max-w-sm">
           <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading doctor information...</p>
+          <p className="text-gray-700 font-medium">Loading doctor information...</p>
+          <p className="text-gray-500 text-sm mt-2">Preparing the booking flow and availability details.</p>
         </div>
       </div>
     );
   }
 
+  if (error && !currentDoctor) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4">
+        <div className="bg-white rounded-3xl shadow-xl border p-8 max-w-md w-full text-center">
+          <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Couldn’t load this doctor</h1>
+          <p className="text-gray-600 mb-6">{error}</p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button variant="outline" onClick={() => fetchDoctorById(doctorId)} className="gap-2">
+              <RefreshCw className="w-4 h-4" />
+              Try again
+            </Button>
+            <Button onClick={() => router.push('/doctors-list')}>Back to doctors</Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!currentDoctor) {
+    return null;
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 ">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 overflow-x-hidden">
       {/* Header */}
-      <div className="bg-white border-b shadow-sm">
+      <div className="bg-white border-b shadow-sm sticky top-0 z-20">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center space-x-4 min-w-0">
               <Link href="/doctors-list">
                 <Button variant="ghost" size="sm" className="text-gray-600">
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Back to Doctors
                 </Button>
               </Link>
-              <div className="h-6 w-px bg-gray-300"></div>
-              <div>
-                <h1 className="text-sm md:text-2xl font-bold text-gray-900">
+              <div className="h-6 w-px bg-gray-300 hidden sm:block"></div>
+              <div className="min-w-0">
+                <h1 className="text-sm md:text-2xl font-bold text-gray-900 truncate">
                   Book Appointment
                 </h1>
-                <p className="text-xs md:text-sm text-gray-600">
+                <p className="text-xs md:text-sm text-gray-600 truncate">
                   with {currentDoctor.name}
                 </p>
               </div>
@@ -271,7 +295,7 @@ const BookingPage = () => {
           {/* Booking Steps */}
           <div className="lg:col-span-2">
             <Card className="shadow-lg border-0">
-              <CardContent className="p-8">
+              <CardContent className="p-4 sm:p-8">
                 <AnimatePresence mode="wait">
                   {currentStep === 1 && (
                     <motion.div
@@ -334,7 +358,7 @@ const BookingPage = () => {
                         onBack={() => setCurrentStep(2)}
                         onConfirm={handleBooking}
                         onPaymentSuccess={handlePaymentSuccess}
-                        loading={loading}
+                        loading={bookingLoading}
                         appointmentId={createdAppointmentId || undefined}
                         patientName={patientName || undefined}
                       />

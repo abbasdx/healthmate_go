@@ -22,7 +22,7 @@ async function createAdmin() {
 
     // Create admin user
     const hashedPassword = await bcrypt.hash('admin123', 12);
-    
+
     const admin = new Admin({
       name: 'System Administrator',
       email: 'admin@doctorconsultation.com',
@@ -33,6 +33,7 @@ async function createAdmin() {
         userManagement: true,
         doctorManagement: true,
         paymentManagement: true,
+        pharmacyManagement: true,
         analytics: true
       }
     });
@@ -41,7 +42,7 @@ async function createAdmin() {
     console.log('Admin user created successfully!');
     console.log('Email: admin@doctorconsultation.com');
     console.log('Password: admin123');
-    
+
   } catch (error) {
     console.error('Error creating admin user:', error);
   } finally {

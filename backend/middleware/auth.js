@@ -45,6 +45,10 @@ module.exports = {
   },
   
   requirePermission: (permission) => (req, res, next) => {
+    if (req.user?.role === 'super_admin') {
+      return next();
+    }
+
     if (!req.user || !req.user.permissions || !req.user.permissions[permission]) {
       return res.forbidden(`Permission required: ${permission}`);
     }

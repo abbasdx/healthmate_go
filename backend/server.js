@@ -57,3 +57,11 @@ app.get('/health', (req, res) => res.ok({ time: new Date().toISOString() }, 'OK'
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server listening on ${PORT}`));
+
+const aiRoutes = require("./routes/ai");
+app.use("/api/ai", aiRoutes);
+
+const pharmacyRoutes = require("./routes/pharmacyRoutes");
+
+app.use("/api/pharmacy", pharmacyRoutes);
+

@@ -88,10 +88,45 @@ export interface User {
     userManagement?: boolean;
     doctorManagement?: boolean;
     paymentManagement?: boolean;
+    pharmacyManagement?: boolean;
     analytics?: boolean;
   };
 }
 
+export interface PharmacyMedicine {
+  _id: string;
+  name: string;
+  brand: string;
+  category: string;
+  price: number;
+  oldPrice?: number;
+  stock: number;
+  image?: string;
+  requiresPrescription: boolean;
+  rating?: number;
+  isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface PharmacyOrder {
+  _id: string;
+  userId: string;
+  medicines: Array<{
+    medicineId?: string;
+    name?: string;
+    quantity: number;
+    price?: number;
+  }>;
+  total: number;
+  address: string;
+  orderType?: string;
+  prescriptionUrl?: string;
+  paymentStatus: string;
+  deliveryStatus: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
 // interfaces/Doctor.ts
 export interface Doctor {

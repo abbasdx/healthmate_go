@@ -11,6 +11,7 @@ const adminSchema = new mongoose.Schema({
     userManagement: { type: Boolean, default: true },
     doctorManagement: { type: Boolean, default: true },
     paymentManagement: { type: Boolean, default: true },
+    pharmacyManagement: { type: Boolean, default: true },
     analytics: { type: Boolean, default: true }
   }
 }, { timestamps: true });

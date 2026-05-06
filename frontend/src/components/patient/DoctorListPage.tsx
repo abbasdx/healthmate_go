@@ -1,6 +1,6 @@
 // src/app/(dashboard)/patient/doctors/page.tsx
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Search, MapPin, Star, Play, Filter as FilterIcon, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -17,20 +17,23 @@ import { DoctorFilters } from '@/lib/types';
 
 const DoctorListPage = () => {
   const searchParams = useSearchParams();
-  const categoryParam = searchParams.get('category');
-  console.log(categoryParam)
-  
-  const { doctors, loading, fetchDoctors } = useDoctorStore();
+  const categoryParam = searchParams.get('category') || '';
+
+  const { doctors, loading, error, fetchDoctors } = useDoctorStore();
   const [filters, setFilters] = useState<DoctorFilters>({
     search: '',
     specialization: '',
-    category: categoryParam || '',
+    category: categoryParam,
     city: '',
     sortBy: 'experience',
     sortOrder: 'desc'
   });
 
   const [showFilters, setShowFilters] = useState(false);
+
+  useEffect(() => {
+    setFilters((prev) => ({ ...prev, category: categoryParam }));
+  }, [categoryParam]);
 
   useEffect(() => {
     fetchDoctors(filters);
@@ -51,9 +54,9 @@ const DoctorListPage = () => {
     });
   };
 
-  const activeFiltersCount = Object.values(filters).filter(value => 
-    value && value !== 'experience' && value !== 'desc'
-  ).length;
+  const activeFiltersCount = useMemo(() => {
+    return [filters.search, filters.specialization, filters.category, filters.city].filter(Boolean).length;
+  }, [filters.search, filters.specialization, filters.category, filters.city]);
 
   return (
     <div className="min-h-screen bg-gray-50 pt-16">
@@ -62,7 +65,7 @@ const DoctorListPage = () => {
       {/* Header Section */}
       <div className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-6 gap-4">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Choose your doctor</h1>
               <p className="text-gray-600 mt-1">Find the perfect healthcare provider for your needs</p>
@@ -70,7 +73,7 @@ const DoctorListPage = () => {
           </div>
 
           {/* Search Bar */}
-          <div className="flex gap-4 mb-6">
+          <div className="flex flex-col md:flex-row gap-4 mb-6">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
               <Input
@@ -113,7 +116,7 @@ const DoctorListPage = () => {
                   className="flex-shrink-0 rounded-full whitespace-nowrap"
                   onClick={() => handleFilterChange('category', cat.title)}
                 >
-                  <div className={`w-6 h-6 ${cat.color} rounded-2xl flex items-center justify-center group-hover:shadow-xl transition-all duration-200`}>
+                  <div className={`w-6 h-6 ${cat.color} rounded-2xl flex items-center justify-center transition-all duration-200`}>
                     <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
                       <path d={cat.icon} />
                     </svg>
@@ -136,7 +139,10 @@ const DoctorListPage = () => {
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
                   <label className="text-sm font-medium mb-2 block">Specialization</label>
-                  <Select value={filters.specialization || ''} onValueChange={(value) => handleFilterChange('specialization', value)}>
+                  <Select
+                    value={filters.specialization || 'all'}
+                    onValueChange={(value) => handleFilterChange('specialization', value === 'all' ? '' : value)}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="All specializations" />
                     </SelectTrigger>
@@ -151,7 +157,10 @@ const DoctorListPage = () => {
 
                 <div>
                   <label className="text-sm font-medium mb-2 block">Location</label>
-                  <Select value={filters.city || ''} onValueChange={(value) => handleFilterChange('city', value)}>
+                  <Select
+                    value={filters.city || 'all'}
+                    onValueChange={(value) => handleFilterChange('city', value === 'all' ? '' : value)}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="All locations" />
                     </SelectTrigger>
@@ -219,6 +228,15 @@ const DoctorListPage = () => {
               </Card>
             ))}
           </div>
+        ) : error ? (
+          <Card className="p-12 text-center border-0 shadow-sm">
+            <h3 className="text-xl font-semibold text-gray-700 mb-2">Unable to load doctors</h3>
+            <p className="text-gray-500 mb-6">{error}</p>
+            <div className="flex flex-col sm:flex-row justify-center gap-3">
+              <Button onClick={() => fetchDoctors(filters)}>Try Again</Button>
+              <Button variant="outline" onClick={clearFilters}>Reset Filters</Button>
+            </div>
+          </Card>
         ) : doctors.length > 0 ? (
           // ✅ Doctor cards with responsive grid layout
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

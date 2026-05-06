@@ -20,7 +20,7 @@ export default function AdminLoginPage() {
   
     useEffect(() => {
       if (isAuthenticated && user) {
-          redirect(`/admin/dashboard`);
+          router.push('/admin/dashboard')
       }
     }, [isAuthenticated, user]);
 
@@ -79,7 +79,7 @@ export default function AdminLoginPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@doctorconsultation.com"
+                  placeholder="abbas@healthmate.com"
                   required
                 />
               </div>
@@ -114,7 +114,7 @@ export default function AdminLoginPage() {
 
             <div className="mt-6 text-center">
               <p className="text-sm text-gray-600">
-                Default credentials: admin@doctorconsultation.com / admin123
+                Default credentials: abbas@healthmate.com / admin123
               </p>
             </div>
           </CardContent>

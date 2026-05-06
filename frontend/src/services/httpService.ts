@@ -78,12 +78,48 @@ class HttpService {
     return this.makeRequest<T>(endpoint, 'POST', body, true, options);
   }
 
+  async uploadFileWithAuth<T = any>(
+    endpoint: string,
+    file: File,
+    options?: RequestOptions
+  ): Promise<ApiResponse<T>> {
+    try {
+      const url = `${BASE_URL}${endpoint}`;
+      const token = localStorage.getItem('token');
+      const headers = {
+        ...(token && { Authorization: `Bearer ${token}` })
+      };
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const config: RequestInit = {
+        method: 'POST',
+        headers,
+        body: formData,
+        ...(options?.headers && { headers: { ...headers, ...options.headers } })
+      };
+
+      const response = await fetch(url, config);
+      const data: ApiResponse<T> = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || `HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      return data;
+    } catch (error: any) {
+      console.error(`API Error [POST ${endpoint}]:`, error);
+      throw error;
+    }
+  }
+
   async putWithAuth<T = any>(endpoint: string, body: any, options?: RequestOptions): Promise<ApiResponse<T>> {
     return this.makeRequest<T>(endpoint, 'PUT', body, true, options);
   }
 
-  async deleteWithAuth<T = any>(endpoint: string, options?: RequestOptions): Promise<ApiResponse<T>> {
-    return this.makeRequest<T>(endpoint, 'DELETE', null, true, options);
+  async deleteWithAuth<T = any>(endpoint: string, body?: any, options?: RequestOptions): Promise<ApiResponse<T>> {
+    return this.makeRequest<T>(endpoint, 'DELETE', body, true, options);
   }
 
   // Methods without authentication
@@ -105,5 +141,6 @@ export const getWithAuth = httpService.getWithAuth.bind(httpService);
 export const postWithAuth = httpService.postWithAuth.bind(httpService);
 export const putWithAuth = httpService.putWithAuth.bind(httpService);
 export const deleteWithAuth = httpService.deleteWithAuth.bind(httpService);
+export const uploadFileWithAuth = httpService.uploadFileWithAuth.bind(httpService);
 export const postWithoutAuth = httpService.postWithoutAuth.bind(httpService);
 export const getWithoutAuth = httpService.getWithoutAuth.bind(httpService);
